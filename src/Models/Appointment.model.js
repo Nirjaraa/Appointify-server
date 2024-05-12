@@ -1,9 +1,12 @@
 const mongoose = require("mongoose");
-const appointmentStatusEnum = require("../enum/appointmentStatusEnum");
 
-const AppointmentSchema = mongoose.Schema(
+const appointmentSchema = mongoose.Schema(
   {
-    time: {
+    startTime: {
+      type: Date,
+      required: true,
+    },
+    endTime: {
       type: Date,
       required: true,
     },
@@ -21,8 +24,10 @@ const AppointmentSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      enum: appointmentStatusEnum,
+      enum: ["accepted", "rejected", "cancelled", "pending"],
+      default: "pending",
     },
+
     images: {
       type: String,
     },
@@ -31,4 +36,4 @@ const AppointmentSchema = mongoose.Schema(
     timestamps: true,
   }
 );
-module.exports = mongoose.model("goal", goalschema);
+module.exports = mongoose.model("Appointment", appointmentSchema);

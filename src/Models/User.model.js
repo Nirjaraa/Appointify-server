@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const userRoleEnum = require("../enum/userRoleEnum");
 
 const userSchema = mongoose.Schema(
   {
@@ -9,7 +8,7 @@ const userSchema = mongoose.Schema(
     },
     role: {
       type: String,
-      enum: userRoleEnum,
+      enum: ["client", "professional"],
       required: true,
     },
     email: {
@@ -41,6 +40,10 @@ const userSchema = mongoose.Schema(
     },
     description: {
       type: String,
+    },
+    category: {
+      type: String,
+      enum: ["medical", "salon", "plumber"],
     },
     images: {
       type: String,
