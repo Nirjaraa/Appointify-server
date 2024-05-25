@@ -43,10 +43,17 @@ const userSchema = mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ["medical", "salon", "plumber"],
+      enum: ["medical", "beauty", "maintenance"],
     },
     images: {
       type: String,
+    },
+    resetPasswordOtp: {
+      type: String,
+    },
+
+    resetPasswordOtpExpires: {
+      type: Date,
     },
   },
 

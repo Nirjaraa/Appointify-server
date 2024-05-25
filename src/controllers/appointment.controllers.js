@@ -4,7 +4,8 @@ const bcrypt = require("bcryptjs");
 const Appointment = require("../Models/Appointment.model");
 const { isValidObjectId } = require("../utils/isValidObjectId");
 const User = require("../Models/User.model");
-const { sendEmail, createText } = require("../utils/sendEmail");
+const { sendEmail, createAppointmentText } = require("../utils/sendEmail");
+const crypto = require("crypto");
 
 const createAppointment = async (req, res) => {
   try {
@@ -114,7 +115,7 @@ const acceptAppointment = async (req, res) => {
     const appointedByUser = await User.findById(acceptAppointments.appointedBy);
 
     const recipient = req.user.email;
-    const emailText = await createText(appointedByUser.fullName, status, appointedToUser.fullName, newStartTime);
+    const emailText = await createAppointmentText(appointedByUser.fullName, status, appointedToUser.fullName, newStartTime);
     const mailOptions = {
       subject: "Appointment Approved",
       text: emailText,
@@ -151,7 +152,7 @@ const rejectAppointment = async (req, res) => {
     const appointedByUser = await User.findById(rejectAppointments.appointedBy);
 
     const recipient = req.user.email;
-    const emailText = await createText(appointedByUser.fullName, status, appointedToUser.fullName, newStartTime);
+    const emailText = await createAppointmentText(appointedByUser.fullName, status, appointedToUser.fullName, newStartTime);
     const mailOptions = {
       subject: "Appointment Rejected",
       text: emailText,
@@ -189,7 +190,7 @@ const cancelAppointment = async (req, res) => {
     const appointedByUser = await User.findById(cancelAppointments.appointedBy);
 
     const recipient = req.user.email;
-    const emailText = await createText(appointedByUser.fullName, status, appointedToUser.fullName, newStartTime);
+    const emailText = await createAppointmentText(appointedByUser.fullName, status, appointedToUser.fullName, newStartTime);
     const mailOptions = {
       subject: "Appointment Cancelled",
       text: emailText,

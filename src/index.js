@@ -14,8 +14,14 @@ const httpServer = http.createServer(app);
 connectDB();
 
 app.use(express.json());
-app.use(cors({ origin: "*" }));
 
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    // methods: ["GET", "POST", "PUT", "DELETE"], // Specify the allowed methods
+    // allowedHeaders: ["Content-Type", "Authorization"], // Specify the allowed headers
+  })
+);
 app.use("/user", userRoutes);
 app.use("/appointment", appointmentRoutes);
 
