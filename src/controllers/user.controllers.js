@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs");
 const User = require("../Models/User.model");
 const { isValidObjectId } = require("../utils/isValidObjectId");
 const jwt = require("jsonwebtoken");
-const { sendEmail, sendOtp } = require("../utils/sendEmail");
+const { sendEmail, sendOtp, verifyEmails } = require("../utils/sendEmail");
 const { v4: uuidv4 } = require("uuid");
 
 const registerUsers = async (req, res) => {
@@ -23,6 +23,8 @@ const registerUsers = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    const verificationCode = generateVerificationCode();
+
     const newUser = await User.create({
       fullName: fullName.trim(),
       email: email.trim(),
@@ -32,7 +34,10 @@ const registerUsers = async (req, res) => {
       phoneNumber: phoneNumber,
       address: address.trim(),
       gender: gender.trim(),
+      emailVerificationCode: verificationCode,
+      emailVerified: false,
     });
+
     if (role === "professional") {
       if (!profession || !category || !description) {
         return res.status(400).json({ error: "Please fill all the fields" });
@@ -43,11 +48,44 @@ const registerUsers = async (req, res) => {
       newUser.description = description;
     }
     await newUser.save();
+
+    const emailText = verifyEmails(newUser.fullName, verificationCode, email);
+    const subject = "Email Verification";
+
+    await sendEmail(email, subject, emailText);
+
     if (newUser) {
-      return res.status(201).json({ message: "Registered Successfully" });
+      return res.status(201).json({ message: "Registered successfully. Please check your email to verify your account." });
     }
   } catch (error) {
     return res.status(500).json({ error: errorHandler(error) });
+  }
+};
+
+const generateVerificationCode = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+const verifyEmail = async (req, res) => {
+  try {
+    const { email, verificationCode } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ error: "User not found with this email" });
+    }
+
+    user.isEmailVerified = true;
+    user.emailverificationCode = null;
+    await user.save();
+
+    if (user.emailVerificationCode !== verificationCode) {
+      return res.status(400).json({ error: "Invalid verification code." });
+    }
+    res.status(200).json({ message: "Email verified successfully" });
+  } catch (error) {
+    console.error("Error verifying email:", error);
+    res.status(500).json({ error: "Failed to verify email" });
   }
 };
 
@@ -56,6 +94,11 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
+
+    if (!user.isEmailVerified) {
+      return res.status(403).json({ error: "You must verify your email before logging in" });
+    }
+
     if (user && (await bcrypt.compare(password, user.password))) {
       return res.status(201).json({ message: "Login Successful", token: generateToken(user.id), user });
     }
@@ -203,4 +246,4 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = { registerUsers, login, getUsers, searchUser, updateProfile, forgotPassword, resetPassword, verifyResetOtp };
+module.exports = { registerUsers, login, getUsers, searchUser, updateProfile, forgotPassword, resetPassword, verifyResetOtp, verifyEmail };

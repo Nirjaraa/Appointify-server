@@ -46,4 +46,12 @@ const sendOtp = (fullName, otp) => {
   Your OTP code is ${otp}`;
 };
 
-module.exports = { sendEmail, createAppointmentText, sendOtp };
+const verifyEmails = (fullName, verificationCode) => {
+  const text = `Dear ${fullName},
+  Your verification code is: ${verificationCode}
+  The Appointify Team
+  [Do Not Reply]`;
+  return text;
+};
+
+module.exports = { sendEmail, createAppointmentText, sendOtp, verifyEmails };
