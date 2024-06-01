@@ -127,6 +127,27 @@ const getUsers = async (req, res) => {
     return res.status(500).json(errorHandler(error));
   }
 };
+
+const getUsersByCategory = async (req, res) => {
+  try {
+    const { category } = req.query;
+
+    if (!category) {
+      return res.status(400).json({ error: "Category parameter is required" });
+    }
+
+    const users = await User.find({ category });
+
+    if (!users || users.length === 0) {
+      return res.status(404).json({ error: "No users found for the given category" });
+    }
+
+    return res.status(200).json({ message: "Users retrieved successfully", userCount: users.length, users });
+  } catch (error) {
+    return res.status(500).json(errorHandler(error));
+  }
+};
+
 const updateProfile = async (req, res) => {
   try {
     const userId = req.params.id;
@@ -246,4 +267,4 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = { registerUsers, login, getUsers, searchUser, updateProfile, forgotPassword, resetPassword, verifyResetOtp, verifyEmail };
+module.exports = { registerUsers, login, getUsers, searchUser, updateProfile, forgotPassword, resetPassword, verifyResetOtp, verifyEmail, getUsersByCategory };
