@@ -20,7 +20,7 @@ router.post("/register", registerUsers);
 router.post("/login", login);
 router.get("/search", isUser, searchUser);
 router.get("/getusersbycategory", getUsersByCategory);
-router.post("/update/:id", isUser, updateProfile);
+router.put("/update/:id", isUser, updateProfile);
 router.get("/:id", isUser, getUsers);
 router.post("/forgot-password", forgotPassword);
 router.post("/verifyotp", verifyResetOtp);
