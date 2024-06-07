@@ -267,4 +267,21 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = { registerUsers, login, getUsers, searchUser, updateProfile, forgotPassword, resetPassword, verifyResetOtp, verifyEmail, getUsersByCategory };
+const categoryUsers = async (req, res) => {
+  try {
+    const categories = ["medical", "beauty", "maintenance"];
+
+    let users = [];
+    for (const category of categories) {
+      console.log(category);
+      const user = await User.find({ category });
+      console.log(user);
+      users.push(user);
+    }
+    return res.status(200).json({ message: "users: ", users });
+  } catch (error) {
+    return res.status(500).json({ error: errorHandler(error) });
+  }
+};
+
+module.exports = { registerUsers, login, getUsers, searchUser, updateProfile, forgotPassword, resetPassword, verifyResetOtp, verifyEmail, getUsersByCategory, categoryUsers };
