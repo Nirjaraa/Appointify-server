@@ -42,8 +42,8 @@ const createAppointment = async (req, res) => {
     }
 
     const newAppointment = await Appointment.create({
-      startTime,
-      endTime,
+      startTime: new Date(startTime),
+      endTime: new Date(endTime),
       description,
       appointedBy: req.user.id,
       appointedTo,
@@ -51,8 +51,21 @@ const createAppointment = async (req, res) => {
       category,
     });
 
+    const { status } = newAppointment;
+    const newStartTime = new Date(startTime).toLocaleString();
+    const appointedToUser = await User.findById(newAppointment.appointedTo);
+    const appointedByUser = await User.findById(newAppointment.appointedBy);
+
+    const recipient = req.user.email;
+    const emailText = await newAppointmentA(appointedByUser.fullName, status, appointedToUser.fullName, newStartTime);
+    const mailOptions = {
+      subject: "Appointment Pending",
+      text: emailText,
+    };
+
+    sendEmail(recipient, mailOptions);
+
     if (newAppointment) {
-      console.log("done");
       return res.status(201).json({ message: "Appointment Successful", status: newAppointment.status });
     }
   } catch (error) {
@@ -83,11 +96,11 @@ const viewAppointmentById = async (req, res) => {
 const viewAppointment = async (req, res) => {
   try {
     const userId = req.user.id;
-    const allAppointmentsTo = await Appointment.find({ appointedTo: userId }).populate("appointedTo", "-password");
+    const allAppointmentsTo = await Appointment.find({ appointedTo: userId }).populate("appointedBy", "-password");
 
     const allAppointmentsBy = await Appointment.find({
       appointedBy: userId,
-    });
+    }).populate("appointedTo", "-password");
     if (!allAppointmentsBy.length && !allAppointmentsTo.length) {
       return res.status(404).json({ message: "You don't have any appointments" });
     }
