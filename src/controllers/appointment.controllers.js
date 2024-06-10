@@ -6,6 +6,7 @@ const { isValidObjectId } = require("../utils/isValidObjectId");
 const User = require("../Models/User.model");
 const { sendEmail, createAppointmentText } = require("../utils/sendEmail");
 const crypto = require("crypto");
+const { populate } = require("dotenv");
 
 const createAppointment = async (req, res) => {
 	try {
@@ -84,7 +85,8 @@ const viewAppointment = async (req, res) => {
 		const userId = req.user.id;
 		const allAppointments = await Appointment.find({
 			$or: [{ appointedBy: userId }, { appointedTo: userId }],
-		});
+		}).populate("appointedBy", "-password");
+
 		if (!allAppointments[0]) {
 			return res.status(404).json({ message: "You don't have any appointments" });
 		}
