@@ -17,10 +17,12 @@ const appointmentSchema = mongoose.Schema(
     appointedBy: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
+      ref: "User",
     },
     appointedTo: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
+      ref: "User",
     },
     status: {
       type: String,
