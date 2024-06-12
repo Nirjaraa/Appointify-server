@@ -171,12 +171,22 @@ const updateProfile = async (req, res) => {
     user.images = images;
     user.category = category;
 
+<<<<<<< HEAD
     await user.save();
 
     return res.status(200).json({ message: "Your Profile has been updated", user });
   } catch (error) {
     return res.status(500).json(errorHandler(error));
   }
+=======
+		await user.save();
+		console.log(user);
+
+		return res.status(200).json({ message: "Your Profile has been updated", user });
+	} catch (error) {
+		return res.status(500).json(errorHandler(error));
+	}
+>>>>>>> ee79c1ba5601f1de0ddc109ba4887f281f61daa5
 };
 const searchUser = async (req, res) => {
   try {

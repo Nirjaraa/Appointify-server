@@ -20,7 +20,7 @@ const createAppointment = async (req, res) => {
     }
 
     const currentDate = new Date();
-    if (currentDate > startTime) {
+    if (currentDate > new Date(startTime)) {
       return res.status(400).json({ error: "Time is invalid" });
     }
 
@@ -29,15 +29,11 @@ const createAppointment = async (req, res) => {
       status: "accepted",
 
       $or: [
-        // Non-Overlaping
         { $and: [{ startTime: { $lte: startTime } }, { endTime: { $gt: startTime } }] },
-        { $and: [{ startTime: { $lt: endTime } }, { endTime: { $gte: endTime } }] },
-        // Overlapping
-        { $and: [{ startTime: { $gt: startTime } }, { endTime: { $lt: endTime } }] },
-        { $and: [{ startTime: { $lte: startTime } }, { endTime: { $gte: endTime } }] },
+        { $and: [{ startTime: { $lte: endTime } }, { endTime: { $gt: endTime } }] },
+        { $and: [{ startTime: { $gte: startTime } }, { endTime: { $lte: endTime } }] },
       ],
     });
-    console.log(overlappingAppointments);
 
     if (overlappingAppointments.length != 0) {
       return res.status(400).json({ error: "You cannot book appointments in this time interval" });
