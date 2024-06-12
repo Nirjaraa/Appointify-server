@@ -25,27 +25,21 @@ const createAppointment = async (req, res) => {
     }
 
     const overlappingAppointments = await Appointment.find({
-      appointedTo: { $ne: appointedTo },
+      appointedTo,
       status: "accepted",
+
       $or: [
         // Non-Overlaping
-        //   { $and: [{ startTime: { $lte: startTime } }, { endTime: { $gt: startTime } }] },
-        //   { $and: [{ startTime: { $lt: endTime } }, { endTime: { $gte: endTime } }] },
-        //   // Overlapping
-        //   { $and: [{ startTime: { $gt: startTime } }, { endTime: { $lt: endTime } }] },
-        //   { $and: [{ startTime: { $lte: startTime } }, { endTime: { $gte: endTime } }] },
-        //
-        { $and: [{ startTime: { $lt: endTime } }, { endTime: { $gt: startTime } }] },
-        // New appointment ends during existing appointment
-        { $and: [{ startTime: { $lt: endTime } }, { endTime: { $gt: endTime } }] },
-        // Existing appointment completely covers new appointment
-        { $and: [{ startTime: { $gte: startTime } }, { endTime: { $lte: endTime } }] },
-        // New appointment completely covers existing appointment
+        { $and: [{ startTime: { $lte: startTime } }, { endTime: { $gt: startTime } }] },
+        { $and: [{ startTime: { $lt: endTime } }, { endTime: { $gte: endTime } }] },
+        // Overlapping
+        { $and: [{ startTime: { $gt: startTime } }, { endTime: { $lt: endTime } }] },
         { $and: [{ startTime: { $lte: startTime } }, { endTime: { $gte: endTime } }] },
       ],
     });
+    console.log(overlappingAppointments);
 
-    if (overlappingAppointments[0]) {
+    if (overlappingAppointments.length != 0) {
       return res.status(400).json({ error: "You cannot book appointments in this time interval" });
     }
 

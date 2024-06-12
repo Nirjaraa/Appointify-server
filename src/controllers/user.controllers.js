@@ -151,9 +151,9 @@ const getUsersByCategory = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const userId = req.params.id;
-    const user = await User.findById(userId);
 
     const { fullName, email, role, DOB, phoneNumber, address, gender, description, profession, images, category } = req.body;
+    const user = await User.findByIdAndUpdate(userId);
 
     user.fullName = fullName;
     user.email = email;
@@ -275,22 +275,6 @@ const categoryUsers = async (req, res) => {
 
     let users = [];
     for (const category of categories) {
-      const user = await User.find({ category });
-      users.push(user);
-    }
-    // console.log(users);
-    return res.status(200).json({ message: "users: ", users });
-  } catch (error) {
-    return res.status(500).json({ error: errorHandler(error) });
-  }
-};
-
-const categoryUsersByThree = async (req, res) => {
-  try {
-    const categories = ["medical", "beauty", "maintenance"];
-
-    let users = [];
-    for (const category of categories) {
       const user = await User.find({ category }).limit(3);
       users.push(user);
     }
@@ -312,5 +296,4 @@ module.exports = {
   verifyEmail,
   getUsersByCategory,
   categoryUsers,
-  categoryUsersByThree,
 };

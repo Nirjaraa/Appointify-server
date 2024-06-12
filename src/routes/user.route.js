@@ -13,7 +13,6 @@ const {
   verifyEmail,
   getUsersByCategory,
   categoryUsers,
-  categoryUsersByThree,
 } = require("../controllers/user.controllers");
 
 const { isUser } = require("../middleware/auth-Middleware");
@@ -23,7 +22,6 @@ router.post("/login", login);
 router.get("/search", isUser, searchUser);
 router.get("/getusersbycategory", getUsersByCategory);
 router.get("/category-users", categoryUsers);
-router.get("/categeory-usersthree", categoryUsersByThree);
 router.put("/update/:id", isUser, updateProfile);
 router.get("/:id", isUser, getUsers);
 router.post("/forgot-password", forgotPassword);
