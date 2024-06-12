@@ -172,6 +172,9 @@ const updateProfile = async (req, res) => {
 		user.images = images;
 		user.category = category;
 
+		await user.save();
+		console.log(user);
+
 		return res.status(200).json({ message: "Your Profile has been updated", user });
 	} catch (error) {
 		return res.status(500).json(errorHandler(error));
