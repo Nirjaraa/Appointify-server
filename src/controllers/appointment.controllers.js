@@ -25,19 +25,27 @@ const createAppointment = async (req, res) => {
     }
 
     const overlappingAppointments = await Appointment.find({
-      appointedTo,
+      appointedTo: { $ne: appointedTo },
       status: "accepted",
       $or: [
         // Non-Overlaping
-        { $and: [{ startTime: { $lte: startTime } }, { endTime: { $gt: startTime } }] },
-        { $and: [{ startTime: { $lt: endTime } }, { endTime: { $gte: endTime } }] },
-        // Overlapping
-        { $and: [{ startTime: { $gt: startTime } }, { endTime: { $lt: endTime } }] },
+        //   { $and: [{ startTime: { $lte: startTime } }, { endTime: { $gt: startTime } }] },
+        //   { $and: [{ startTime: { $lt: endTime } }, { endTime: { $gte: endTime } }] },
+        //   // Overlapping
+        //   { $and: [{ startTime: { $gt: startTime } }, { endTime: { $lt: endTime } }] },
+        //   { $and: [{ startTime: { $lte: startTime } }, { endTime: { $gte: endTime } }] },
+        //
+        { $and: [{ startTime: { $lt: endTime } }, { endTime: { $gt: startTime } }] },
+        // New appointment ends during existing appointment
+        { $and: [{ startTime: { $lt: endTime } }, { endTime: { $gt: endTime } }] },
+        // Existing appointment completely covers new appointment
+        { $and: [{ startTime: { $gte: startTime } }, { endTime: { $lte: endTime } }] },
+        // New appointment completely covers existing appointment
         { $and: [{ startTime: { $lte: startTime } }, { endTime: { $gte: endTime } }] },
       ],
     });
 
-    if (overlappingAppointments.length) {
+    if (overlappingAppointments[0]) {
       return res.status(400).json({ error: "You cannot book appointments in this time interval" });
     }
 
@@ -51,13 +59,11 @@ const createAppointment = async (req, res) => {
       category,
     });
 
-    const { status } = newAppointment;
-    const newStartTime = new Date(startTime).toLocaleString();
     const appointedToUser = await User.findById(newAppointment.appointedTo);
     const appointedByUser = await User.findById(newAppointment.appointedBy);
 
     const recipient = req.user.email;
-    const emailText = await newAppointmentA(appointedByUser.fullName, status, appointedToUser.fullName, newStartTime);
+    const emailText = await createAppointmentText(appointedByUser.fullName, "pending", appointedToUser.fullName, startTime);
     const mailOptions = {
       subject: "Appointment Pending",
       text: emailText,
