@@ -15,6 +15,7 @@ const createAppointment = async (req, res) => {
     if (!startTime || !description || !appointedTo || !endTime) {
       return res.status(400).json({ error: "Please fill all the required fields" });
     }
+
     if (appointedTo == req.user.id) {
       return res.status(400).json({ error: "You cannot book appointment to yourself" });
     }
@@ -59,7 +60,7 @@ const createAppointment = async (req, res) => {
       text: emailText,
     };
 
-    sendEmail(recipient, mailOptions);
+    sendEmail(recipient, mailOptions, emailText);
 
     if (newAppointment) {
       return res.status(201).json({ message: "Appointment Successful", status: newAppointment.status });
@@ -136,7 +137,7 @@ const acceptAppointment = async (req, res) => {
       text: emailText,
     };
 
-    sendEmail(recipient, mailOptions);
+    sendEmail(recipient, mailOptions, emailText);
     return res.status(200).json({ message: "Appointment has been approved successfully", acceptAppointments });
   } catch (error) {
     return res.status(500).json({ error: errorHandler(error) });
@@ -211,7 +212,7 @@ const cancelAppointment = async (req, res) => {
       text: emailText,
     };
 
-    sendEmail(recipient, mailOptions);
+    sendEmail(recipient, mailOptions, emailText);
     return res.status(200).json({ message: "Appointment has been cancelled", cancelAppointments });
     // return res.status(200).json({ message: "Appointment has been cancelled", cancelAppointments });
   } catch (error) {
