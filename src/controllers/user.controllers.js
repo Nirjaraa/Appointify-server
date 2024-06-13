@@ -93,7 +93,7 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select(" -createdAt -resetPasswordOtp -resetPasswordOtpExpires -emailVerificationCode -updatedAt ");
 
     if (!user.isEmailVerified) {
       return res.status(403).json({ error: "You must verify your email before logging in" });
@@ -117,7 +117,7 @@ const getUsers = async (req, res) => {
       return res.status(404).json({ error: "Invalid Id" });
     }
 
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select("-password -createdAt -resetPasswordOtp -resetPasswordOtpExpires -emailVerificationCode -isEmailVerified -updatedAt ");
     if (!user) {
       return res.status(404).json({ error: "User Not Found" });
     }
@@ -136,7 +136,7 @@ const getUsersByCategory = async (req, res) => {
       return res.status(400).json({ error: "Category parameter is required" });
     }
 
-    const users = await User.find({ category });
+    const users = await User.find({ category }).select("-password -createdAt -resetPasswordOtp -resetPasswordOtpExpires -emailVerificationCode -isEmailVerified -updatedAt ");
 
     if (!users || users.length === 0) {
       return res.status(404).json({ error: "No users found for the given category" });
@@ -153,7 +153,7 @@ const updateProfile = async (req, res) => {
     const userId = req.params.id;
 
     const { fullName, email, role, DOB, phoneNumber, address, gender, description, profession, images, category } = req.body;
-    const user = await User.findByIdAndUpdate(userId);
+    const user = await User.findByIdAndUpdate(userId).select("-password -createdAt -resetPasswordOtp -resetPasswordOtpExpires -emailVerificationCode -isEmailVerified -updatedAt ");
 
     user.fullName = fullName;
     user.email = email;
@@ -185,7 +185,9 @@ const searchUser = async (req, res) => {
     if (!category) {
       return res.status(400).json({ error: "Category parameter is required" });
     }
-    const userExists = await User.find({ $or: [{ fullName: search }, { category: search }] });
+    const userExists = await User.find({ $or: [{ fullName: search }, { category: search }] }).select(
+      "-password -createdAt -resetPasswordOtp -resetPasswordOtpExpires -emailVerificationCode -isEmailVerified -updatedAt "
+    );
 
     if (!userExists[0]) {
       return res.status(400).json({ error: "User dosen't exist" });
@@ -275,10 +277,19 @@ const categoryUsers = async (req, res) => {
 
     let users = [];
     for (const category of categories) {
-      const user = await User.find({ category }).limit(3);
+      const user = await User.find({ category }).limit(3).select("-password -createdAt -resetPasswordOtp -resetPasswordOtpExpires -emailVerificationCode -isEmailVerified -updatedAt ");
       users.push(user);
     }
-    return res.status(200).json({ message: "users: ", users });
+    return res.status(200).json({ message: "Category users fetched successfully. ", users });
+  } catch (error) {
+    return res.status(500).json({ error: errorHandler(error) });
+  }
+};
+
+const getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("-password -createdAt -resetPasswordOtp -resetPasswordOtpExpires -emailVerificationCode -isEmailVerified -updatedAt ");
+    return res.status(200).json({ message: "Profile fetched successfully! ", user });
   } catch (error) {
     return res.status(500).json({ error: errorHandler(error) });
   }
@@ -296,4 +307,5 @@ module.exports = {
   verifyEmail,
   getUsersByCategory,
   categoryUsers,
+  getProfile,
 };

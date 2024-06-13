@@ -40,6 +40,37 @@ const createAppointment = async (req, res) => {
       return res.status(400).json({ error: "You cannot book appointments in this time interval" });
     }
 
+    //   const startDate = new Date(startTime).setHours(0, 0, 0, 0);
+    //   const endDate = new Date(startDate);
+    //   endDate.setDate(endDate.getDate() + 2);
+
+    //   const appointments = await Appointment.find({
+    //     appointedTo,
+    //     status: "accepted",
+    //     startTime: { $gte: startDate, $lt: endDate },
+    //   }).sort({ startTime: 1 });
+
+    //   // Calculate free slots
+    //   const freeSlots = [];
+    //   let lastEndTime = new Date(startDate);
+
+    //   for (const appointment of appointments) {
+    //     if (lastEndTime < new Date(appointment.startTime)) {
+    //       freeSlots.push({ start: lastEndTime, end: new Date(appointment.startTime) });
+    //     }
+    //     lastEndTime = new Date(appointment.endTime);
+    //   }
+
+    //   // Check for a free slot after the last appointment of the next day
+    //   if (lastEndTime < endDate) {
+    //     freeSlots.push({ start: lastEndTime, end: endDate });
+    //   }
+
+    //   return res.status(400).json({
+    //     error: "You cannot book appointments in this time interval",
+    //     freeSlots,
+    //   });
+    // }
     const newAppointment = await Appointment.create({
       startTime: new Date(startTime),
       endTime: new Date(endTime),
@@ -61,6 +92,13 @@ const createAppointment = async (req, res) => {
     };
 
     sendEmail(recipient, mailOptions, emailText);
+
+    const appointedToEmailText = createAppointmentText(appointedByUser.fullName, "booked", appointedToUser.fullName, startTime);
+    const appointedToMailOptions = {
+      subject: "New Appointment Booked",
+      text: appointedToEmailText,
+    };
+    sendEmail(appointedToUser.email, appointedToMailOptions, appointedToEmailText);
 
     if (newAppointment) {
       return res.status(201).json({ message: "Appointment Successful", status: newAppointment.status });
