@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs");
 const Appointment = require("../Models/Appointment.model");
 const { isValidObjectId } = require("../utils/isValidObjectId");
 const User = require("../Models/User.model");
-const { sendEmail, createAppointmentText } = require("../utils/sendEmail");
+const { sendEmail, createAppointmentText, professionalAppointmentText } = require("../utils/sendEmail");
 const crypto = require("crypto");
 const { populate } = require("dotenv");
 
@@ -39,38 +39,6 @@ const createAppointment = async (req, res) => {
     if (overlappingAppointments.length != 0) {
       return res.status(400).json({ error: "You cannot book appointments in this time interval" });
     }
-
-    //   const startDate = new Date(startTime).setHours(0, 0, 0, 0);
-    //   const endDate = new Date(startDate);
-    //   endDate.setDate(endDate.getDate() + 2);
-
-    //   const appointments = await Appointment.find({
-    //     appointedTo,
-    //     status: "accepted",
-    //     startTime: { $gte: startDate, $lt: endDate },
-    //   }).sort({ startTime: 1 });
-
-    //   // Calculate free slots
-    //   const freeSlots = [];
-    //   let lastEndTime = new Date(startDate);
-
-    //   for (const appointment of appointments) {
-    //     if (lastEndTime < new Date(appointment.startTime)) {
-    //       freeSlots.push({ start: lastEndTime, end: new Date(appointment.startTime) });
-    //     }
-    //     lastEndTime = new Date(appointment.endTime);
-    //   }
-
-    //   // Check for a free slot after the last appointment of the next day
-    //   if (lastEndTime < endDate) {
-    //     freeSlots.push({ start: lastEndTime, end: endDate });
-    //   }
-
-    //   return res.status(400).json({
-    //     error: "You cannot book appointments in this time interval",
-    //     freeSlots,
-    //   });
-    // }
     const newAppointment = await Appointment.create({
       startTime: new Date(startTime),
       endTime: new Date(endTime),
@@ -81,27 +49,29 @@ const createAppointment = async (req, res) => {
       category,
     });
 
-    const appointedToUser = await User.findById(newAppointment.appointedTo);
-    const appointedByUser = await User.findById(newAppointment.appointedBy);
-
-    const recipient = req.user.email;
-    const emailText = await createAppointmentText(appointedByUser.fullName, "pending", appointedToUser.fullName, startTime);
-    const mailOptions = {
-      subject: "Appointment Pending",
-      text: emailText,
-    };
-
-    sendEmail(recipient, mailOptions, emailText);
-
-    const appointedToEmailText = createAppointmentText(appointedByUser.fullName, "booked", appointedToUser.fullName, startTime);
-    const appointedToMailOptions = {
-      subject: "New Appointment Booked",
-      text: appointedToEmailText,
-    };
-    sendEmail(appointedToUser.email, appointedToMailOptions, appointedToEmailText);
-
     if (newAppointment) {
+      const appointedToUser = await User.findById(newAppointment.appointedTo);
+      const appointedByUser = await User.findById(newAppointment.appointedBy);
+
+      const recipient = req.user.email;
+      const emailText = await createAppointmentText(appointedByUser.fullName, "pending", appointedToUser.fullName, start);
+      const mailOptions = {
+        subject: "Appointment Pending",
+        text: emailText,
+      };
+
+      sendEmail(recipient, mailOptions, emailText);
+
+      const appointedToEmailText = professionalAppointmentText(appointedByUser.fullName, appointedToUser.fullName, start);
+      const appointedToMailOptions = {
+        subject: "New Appointment Booked",
+        text: appointedToEmailText,
+      };
+      sendEmail(appointedToUser.email, appointedToMailOptions, appointedToEmailText);
+
       return res.status(201).json({ message: "Appointment Successful", status: newAppointment.status });
+    } else {
+      return res.status(500).json({ error: "Failed to create appointment." });
     }
   } catch (error) {
     return res.status(500).json({ error: errorHandler(error) });

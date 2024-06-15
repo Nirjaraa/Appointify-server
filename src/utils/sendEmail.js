@@ -42,19 +42,21 @@ const createAppointmentText = (appointedBy, status, appointedTo, currentDate) =>
     The Appointify Team
     [Do Not Reply]`;
 
-  if (status === "booked") {
-    text = `
-    Dear ${appointedTo},
-    You have a new appointment booked through Appointify.
-    Details:
-    - Date & Time: ${formattedDate}
-    - Booked by: ${appointedBy}
-     Please log in to Appointify to accept or reject this appointment.
-    Best regards,
-    The Appointify Team
-    [Do Not Reply]`;
-  }
+  return text;
+};
 
+const professionalAppointmentText = (appointedBy, appointedTo, currentDate) => {
+  const formattedDate = new Date(currentDate).toLocaleString();
+  let text = `
+Dear ${appointedTo},
+You have a new appointment booked through Appointify.
+Details:
+- Date & Time: ${formattedDate}
+- Booked by: ${appointedBy}
+ Please log in to Appointify to accept or reject this appointment.
+Best regards,
+The Appointify Team
+[Do Not Reply]`;
   return text;
 };
 
