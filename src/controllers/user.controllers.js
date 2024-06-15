@@ -182,7 +182,7 @@ const updateProfile = async (req, res) => {
 };
 const searchUser = async (req, res) => {
 	try {
-		const { search } = req.body;
+		const { search } = req.query;
 
 		if (!search) {
 			return res.status(400).json({ error: "Please add all fields " });
@@ -287,6 +287,16 @@ const categoryUsers = async (req, res) => {
 	}
 };
 
+const getProfile = async (req, res) => {
+	try {
+		const { _id } = req.user;
+
+		return res.status(200).json({ message: "users: ", user });
+	} catch (error) {
+		return res.status(500).json({ error: errorHandler(error) });
+	}
+};
+
 module.exports = {
 	registerUsers,
 	login,
@@ -299,4 +309,5 @@ module.exports = {
 	verifyEmail,
 	getUsersByCategory,
 	categoryUsers,
+	getProfile,
 };

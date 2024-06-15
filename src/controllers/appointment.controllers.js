@@ -43,7 +43,7 @@ const createAppointment = async (req, res) => {
 		});
 
 		if (overlappingAppointments.length !== 0) {
-			return res.status(400).json({ error: "You cannot book appointments in this time interval" });
+			return res.status(400).json({ error: "You cannot book appointments in this time interval", overlappingAppointments });
 		}
 
 		const newAppointment = await Appointment.create({
@@ -62,7 +62,7 @@ const createAppointment = async (req, res) => {
 		const appointedByUser = await User.findById(newAppointment.appointedBy);
 
 		const recipient = req.user.email;
-		const emailText = await newAppointment(appointedByUser.fullName, status, appointedToUser.fullName, newStartTime);
+		const emailText = await createAppointmentText(appointedByUser.fullName, status, appointedToUser.fullName, newStartTime);
 		const mailOptions = {
 			subject: "Appointment Pending",
 			text: emailText,
@@ -71,7 +71,9 @@ const createAppointment = async (req, res) => {
 		sendEmail(recipient, mailOptions);
 
 		if (newAppointment) {
-			return res.status(201).json({ message: "Appointment Successful", status: newAppointment.status });
+			return res
+				.status(201)
+				.json({ message: "Appointment Successful", status: newAppointment.status, overlappingAppointments });
 		}
 	} catch (error) {
 		return res.status(500).json({ error: errorHandler(error) });
