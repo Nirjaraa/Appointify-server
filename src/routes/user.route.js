@@ -14,6 +14,7 @@ const {
 	getUsersByCategory,
 	categoryUsers,
 	getProfile,
+	occupiedTime,
 } = require("../controllers/user.controllers");
 
 const { isUser } = require("../middleware/auth-Middleware");
@@ -23,6 +24,7 @@ router.post("/login", login);
 router.get("/search", isUser, searchUser);
 router.get("/getusersbycategory", getUsersByCategory);
 router.get("/category-users", categoryUsers);
+router.get("/occupied", isUser, occupiedTime);
 router.put("/update/:id", isUser, updateProfile);
 router.post("/forgot-password", forgotPassword);
 router.post("/verifyotp", verifyResetOtp);

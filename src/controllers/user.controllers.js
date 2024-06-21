@@ -6,6 +6,7 @@ const { isValidObjectId } = require("../utils/isValidObjectId");
 const jwt = require("jsonwebtoken");
 const { sendEmail, sendOtp, verifyEmails } = require("../utils/sendEmail");
 const { v4: uuidv4 } = require("uuid");
+const Appointment = require("../Models/Appointment.model");
 
 const registerUsers = async (req, res) => {
 	try {
@@ -297,6 +298,20 @@ const getProfile = async (req, res) => {
 	}
 };
 
+const occupiedTime = async (req, res) => {
+	try {
+		const userId = req.user.id;
+
+		const occupiedTimes = await Appointment.find({ appointedTo: userId, status: "accepted", startTime: { $gt: new Date() } })
+			.sort({ startTime: 1 })
+			.select({ startTime: 1, endTime: 1 });
+
+		return res.status(200).json({ message: "Appointments have been fetched.", occupiedTimes });
+	} catch (error) {
+		return res.status(500).json({ error: errorHandler(error) });
+	}
+};
+
 module.exports = {
 	registerUsers,
 	login,
@@ -310,4 +325,5 @@ module.exports = {
 	getUsersByCategory,
 	categoryUsers,
 	getProfile,
+	occupiedTime,
 };
